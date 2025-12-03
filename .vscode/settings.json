@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/1fcbe08d-c0f2-4efe-8730-d62ab42a85a1/resourceGroups/oscar-relecloud_group/providers/Microsoft.Web/sites/oscar-relecloud",
+    "appService.deploySubpath": "."
+}
