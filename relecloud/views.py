@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from . import models
 from django.views import generic
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.mail import send_mail
 
 # Create your views here.
 def index(request):
@@ -47,3 +48,16 @@ class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     fields = ['name', 'email', 'cruise', 'notes']
     success_url = reverse_lazy('index')
     success_message = 'Thank you, %(name)s! We will email you when we have more information about %(cruise)s!'
+
+    def form_valid(self, form):
+        # Enviar email
+        send_mail(
+            "Nueva solicitud de información",
+            f"Nombre: {form.cleaned_data['name']}\n"
+            f"Email: {form.cleaned_data['email']}\n"
+            f"Cruise: {form.cleaned_data['cruise']}\n"
+            f"Notas: {form.cleaned_data['notes']}",
+            "alvaro.pruebasDjango@gmail.com",           # correo remitente
+            ["9204987@alumnos.ufv.es"],                 # correo destinatario
+        )
+        return super().form_valid(form)
