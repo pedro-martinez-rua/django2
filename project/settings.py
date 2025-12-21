@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-w1+da^!#(%(855+hlr77-x2ep-j&4w8(md1(f==ne@fl+55$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = True
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['pedro-relecloud-emfxffdygpced4ha.francecentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
 # poner solo la primera
@@ -146,8 +146,13 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Media (uploads)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/home/media")
+
+# Force local filesystem storage (no Azure Blob)
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
