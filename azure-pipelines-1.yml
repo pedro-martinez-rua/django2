@@ -43,6 +43,8 @@ stages:
         python -m pip install --upgrade pip
         pip install setup
         pip install -r requirements.txt
+      env: 
+        DB_PASSWORD: $(DB_PASSWORD)
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
 
@@ -77,6 +79,8 @@ stages:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         python manage.py test
+      env: 
+        DB_PASSWORD: $(DB_PASSWORD)
       workingDirectory: $(projectRoot)
       displayName: "Run Django tests"
 
