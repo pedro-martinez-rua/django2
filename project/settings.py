@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django",
+        "NAME": os.getenv("DB_NAME", "django"),
         "USER": "pedro",
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": "pedro-relecloud.postgres.database.azure.com",

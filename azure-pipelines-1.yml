@@ -51,8 +51,7 @@ stages:
       workingDirectory: $(projectRoot)
       displayName: "Apply database migrations"
       env:
-        AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
-        AZURE_ACCOUNT_KEY: $(AZURE_ACCOUNT_KEY)
+        DB_NAME: $(DB_NAME)
         DB_PASSWORD: $(DB_PASSWORD)
 
     - script: |
