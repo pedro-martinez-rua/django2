@@ -24,21 +24,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5^-arkipd+x)%%axvd%)upji+td7j8do&=++qfq%fb48=9em0q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+#DEBUG = True
 DEBUG = False
-# DEBUG = True
 
 ALLOWED_HOSTS = ['oscar-relecloud-fhazd0ejc7gbbzd9.spaincentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
 # poner solo la primera
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.azurewebsites.net",
-]
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["https://*.azurewebsites.net"]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Local dev por HTTP
+    CSRF_TRUSTED_ORIGINS = []
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Application definition
 

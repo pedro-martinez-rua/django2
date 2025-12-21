@@ -9,6 +9,18 @@ ReleCloud - {{ destination }}
 <p>
 {{ destination.description }}
 </p>
+<div class="col-md-4">
+  {% if destination.image %}
+    <img class="mr-3 img-fluid"
+         src="{{ destination.image.url }}"
+         alt="{{ destination.name }}" />
+  {% else %}
+    <img class="mr-3 img-fluid"
+         src="/static/res/img/astronaut.jpeg"
+         alt="Astronaut looking into space" />
+  {% endif %}
+</div>
+
 <p>
     <a href="{% url 'destination_form' destination.id %}">[Edit this destination]</a>
 </p>
@@ -19,10 +31,6 @@ ReleCloud - {{ destination }}
 <ul class="list-group">
     {% for cruise in destination.cruises.all %}
     <a class="list-group-item list-group-item-action" href="{% url 'cruise_detail' cruise.id %}">{{ cruise }}</a>
-    {% if destination.image %}
-        <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
-    {% endif %}
-
     {% endfor %}
 </ul>
 {% endblock content %}

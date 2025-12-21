@@ -23,12 +23,12 @@ class DestinationDetailView(generic.DetailView):
 class DestinationCreateView(generic.CreateView):
     model = models.Destination
     template_name = 'destination_form.html'
-    fields = ['name', 'description']
+    fields = ['name', 'description', 'image']
 
 class DestinationUpdateView(generic.UpdateView):
     model = models.Destination
     template_name = 'destination_form.html'
-    fields = ['name', 'description']
+    fields = ['name', 'description', 'image']
 
 class DestinationDeleteView(generic.DeleteView):
     model = models.Destination
