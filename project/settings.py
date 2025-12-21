@@ -143,9 +143,11 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# para desarrollo
 if DEBUG:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
+# para prod
 else:
     DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
     AZURE_ACCOUNT_NAME = os.getenv("AZURE_ACCOUNT_NAME")
