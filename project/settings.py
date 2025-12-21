@@ -21,13 +21,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5^-arkipd+x)%%axvd%)upji+td7j8do&=++qfq%fb48=9em0q'
+SECRET_KEY = 'django-insecure-w1+da^!#(%(855+hlr77-x2ep-j&4w8(md1(f==ne@fl+55$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = True
 DEBUG = False
 
-ALLOWED_HOSTS = ['oscar-relecloud-fhazd0ejc7gbbzd9.spaincentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['pedro-relecloud-emfxffdygpced4ha.francecentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
 # poner solo la primera
 
 if not DEBUG:
