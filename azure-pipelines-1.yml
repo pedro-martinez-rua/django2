@@ -44,6 +44,17 @@ stages:
         DB_PASSWORD: $(DB_PASSWORD)
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
+
+    - script: |
+        source antenv/bin/activate
+        python manage.py migrate --noinput
+      workingDirectory: $(projectRoot)
+      displayName: "Apply database migrations"
+      env:
+        AZURE_ACCOUNT_NAME: $(AZURE_ACCOUNT_NAME)
+        AZURE_ACCOUNT_KEY: $(AZURE_ACCOUNT_KEY)
+        DB_PASSWORD: $(DB_PASSWORD)
+
     - script: |
         source antenv/bin/activate
         python manage.py collectstatic --noinput
