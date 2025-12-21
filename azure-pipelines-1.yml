@@ -7,7 +7,7 @@ trigger:
 - main
 
 variables:
-- group: Relecloud Variable Group   
+- group: Relecloud Variable Group   # <-- nombre exacto del variable group
 - name: azureServiceConnectionId
   value: '28ee89c9-e2fa-440b-9990-893eeaf27d4f'
 - name: webAppName
@@ -101,21 +101,12 @@ stages:
       runOnce:
         deploy:
           steps:
+
           - task: UsePythonVersion@0
             inputs:
               versionSpec: '$(pythonVersion)'
             displayName: 'Use Python version'
 
-          - script: |
-              python -m venv antenv
-              source antenv/bin/activate
-              python -m pip install --upgrade pip
-              pip install -r requirements.txt
-              python manage.py migrate --noinput
-            workingDirectory: $(projectRoot)
-            displayName: "Apply database migrations"
-            env:
-              DB_PASSWORD: $(DB_PASSWORD)
           - task: AzureWebApp@1
             displayName: 'Deploy Azure Web App : pedro-relecloud'
             inputs:
