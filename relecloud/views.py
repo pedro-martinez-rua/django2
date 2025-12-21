@@ -4,8 +4,11 @@ from . import models
 from django.views import generic
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.mail import send_mail
+import logging
 
-# Create your views here.
+# Logger for email errors
+logger = logging.getLogger(__name__)
+
 def index(request):
     return render(request, 'index.html')
 
@@ -49,26 +52,30 @@ class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     success_message = 'Thank you, %(name)s! We will email you when we have more information about %(cruise)s!'
 
     def form_valid(self, form):
-        # Email to the responsible / company
-        send_mail(
-            "New information request",
-            f"Name: {form.cleaned_data['name']}\n"
-            f"Email: {form.cleaned_data['email']}\n"
-            f"Cruise: {form.cleaned_data['cruise']}\n"
-            f"Notes: {form.cleaned_data['notes']}",
-            "alvaro.pruebasDjango@gmail.com",           # sender email
-            ["alvaro.pruebasDjango@gmail.com"],         # company email / recipient
-        )
+        try:
+            # Email to company
+            send_mail(
+                "New information request",
+                f"Name: {form.cleaned_data['name']}\n"
+                f"Email: {form.cleaned_data['email']}\n"
+                f"Cruise: {form.cleaned_data['cruise']}\n"
+                f"Notes: {form.cleaned_data['notes']}",
+                "alvaro.pruebasDjango@gmail.com",
+                ["alvaro.pruebasDjango@gmail.com"],
+            )
 
-        # Confirmation email to the user who submitted the request
-        send_mail(
-            "Request received",
-            f"Hello {form.cleaned_data['name']},\n\n"
-            "We have received your request for information about "
-            f"{form.cleaned_data['cruise']}. We will contact you shortly.\n\n"
-            "Thank you!",
-            "alvaro.pruebasDjango@gmail.com",           # sender email
-            [form.cleaned_data['email']],               # user email / recipient
-        )
+            # Confirmation email to user
+            send_mail(
+                "Request received",
+                f"Hello {form.cleaned_data['name']},\n\n"
+                "We have received your request for information about "
+                f"{form.cleaned_data['cruise']}. We will contact you shortly.\n\n"
+                "Thank you!",
+                "alvaro.pruebasDjango@gmail.com",
+                [form.cleaned_data['email']],
+            )
+        except Exception as e:
+            logger.error(f"Error sending email: {e}")
 
         return super().form_valid(form)
+
