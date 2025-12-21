@@ -19,6 +19,10 @@ ReleCloud - {{ destination }}
 <ul class="list-group">
     {% for cruise in destination.cruises.all %}
     <a class="list-group-item list-group-item-action" href="{% url 'cruise_detail' cruise.id %}">{{ cruise }}</a>
+    {% if destination.image %}
+        <img src="{{ destination.image.url }}" alt="{{ destination.name }}">
+    {% endif %}
+
     {% endfor %}
 </ul>
 {% endblock content %}
