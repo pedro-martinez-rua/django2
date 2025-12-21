@@ -7,22 +7,19 @@ trigger:
 - main
 
 variables:
-  # Azure Resource Manager connection created during pipeline creation
-  azureServiceConnectionId: '28ee89c9-e2fa-440b-9990-893eeaf27d4f'
-
-  # Web app name
-  webAppName: 'pedro-relecloud'
-
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
-
-  # Environment name
-  environmentName: 'pedro-relecloud'
-
-  # Project root folder. Point to the folder containing manage.py file.
-  projectRoot: $(System.DefaultWorkingDirectory)
-
-  pythonVersion: '3.11'
+- group: Relecloud Variable Group   # <-- nombre exacto del variable group
+- name: azureServiceConnectionId
+  value: '28ee89c9-e2fa-440b-9990-893eeaf27d4f'
+- name: webAppName
+  value: 'pedro-relecloud'
+- name: vmImageName
+  value: 'ubuntu-latest'
+- name: environmentName
+  value: 'pedro-relecloud'
+- name: projectRoot
+  value: $(System.DefaultWorkingDirectory)
+- name: pythonVersion
+  value: '3.11'
 
 stages:
 - stage: Build
