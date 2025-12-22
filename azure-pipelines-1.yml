@@ -7,22 +7,19 @@ trigger:
 - main
 
 variables:
-  # Azure Resource Manager connection created during pipeline creation
-  azureServiceConnectionId: '28ee89c9-e2fa-440b-9990-893eeaf27d4f'
-
-  # Web app name
-  webAppName: 'pedro-relecloud'
-
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
-
-  # Environment name
-  environmentName: 'pedro-relecloud'
-
-  # Project root folder. Point to the folder containing manage.py file.
-  projectRoot: $(System.DefaultWorkingDirectory)
-
-  pythonVersion: '3.11'
+- group: Relecloud Variable Group   # <-- nombre exacto del variable group
+- name: azureServiceConnectionId
+  value: '28ee89c9-e2fa-440b-9990-893eeaf27d4f'
+- name: webAppName
+  value: 'pedro-relecloud'
+- name: vmImageName
+  value: 'ubuntu-latest'
+- name: environmentName
+  value: 'pedro-relecloud'
+- name: projectRoot
+  value: $(System.DefaultWorkingDirectory)
+- name: pythonVersion
+  value: '3.11'
 
 stages:
 - stage: Build
@@ -43,8 +40,27 @@ stages:
         python -m pip install --upgrade pip
         pip install setup
         pip install -r requirements.txt
+      env: 
+        DB_PASSWORD: $(DB_PASSWORD)
       workingDirectory: $(projectRoot)
       displayName: "Install requirements"
+
+    - script: |
+        source antenv/bin/activate
+        python manage.py migrate --noinput
+      workingDirectory: $(projectRoot)
+      displayName: "Apply database migrations"
+      env:
+        DB_NAME: $(DB_NAME)
+        DB_PASSWORD: $(DB_PASSWORD)
+
+    - script: |
+        source antenv/bin/activate
+        python manage.py collectstatic --noinput
+      workingDirectory: $(projectRoot)
+      displayName: "Collect static files"
+      env:
+        DB_PASSWORD: $(DB_PASSWORD)
 
     - task: ArchiveFiles@2
       displayName: 'Archive files'
@@ -58,10 +74,33 @@ stages:
     - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
       displayName: 'Upload package'
       artifact: drop
+- stage: Test
+  displayName: Test stage
+  dependsOn: Build
+  jobs:
+  - job: TestJob
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        python -m venv antenv
+        source antenv/bin/activate
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        python manage.py test
+      env: 
+        DB_PASSWORD: $(DB_PASSWORD)
+      workingDirectory: $(projectRoot)
+      displayName: "Run Django tests"
 
 - stage: Deploy
   displayName: 'Deploy Web App'
-  dependsOn: Build
+  dependsOn: Test
   condition: succeeded()
   jobs:
   - deployment: DeploymentJob

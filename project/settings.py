@@ -21,24 +21,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5^-arkipd+x)%%axvd%)upji+td7j8do&=++qfq%fb48=9em0q'
+SECRET_KEY = 'django-insecure-w1+da^!#(%(855+hlr77-x2ep-j&4w8(md1(f==ne@fl+55$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+#DEBUG = True
 DEBUG = False
-# DEBUG = True
 
-ALLOWED_HOSTS = ['oscar-relecloud-fhazd0ejc7gbbzd9.spaincentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['pedro-relecloud-emfxffdygpced4ha.francecentral-01.azurewebsites.net', 'localhost', '127.0.0.1']
 # poner solo la primera
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.azurewebsites.net",
-]
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = ["https://*.azurewebsites.net"]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Local dev por HTTP
+    CSRF_TRUSTED_ORIGINS = []
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Application definition
 
@@ -95,10 +98,10 @@ WSGI_APPLICATION = 'project.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django",
-        "USER": "oscarreleclouddb",
+        "NAME": os.getenv("DB_NAME", "django"),
+        "USER": "pedro",
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": "oscar-relecloud-db.postgres.database.azure.com",
+        "HOST": "pedro-relecloud.postgres.database.azure.com",
         "PORT": "5432",
         "OPTIONS": {"sslmode": "require"},
     }
@@ -143,17 +146,14 @@ STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# para desarrollo
-if DEBUG:
-    MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
-# para prod
-else:
-    DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
-    AZURE_ACCOUNT_NAME = os.getenv("AZURE_ACCOUNT_NAME")
-    AZURE_ACCOUNT_KEY = os.getenv("AZURE_ACCOUNT_KEY")
-    AZURE_CONTAINER = "media"
-    MEDIA_URL = f"https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/"
+# Media (uploads)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/home/media/")
+
+WHITENOISE_ROOT = MEDIA_ROOT
+
+# Force local filesystem storage (no Azure Blob)
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 
 # Default primary key field type
