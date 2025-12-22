@@ -148,7 +148,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media (uploads)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/home/media")
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", "/home/media/")
+
+WHITENOISE_ROOT = MEDIA_ROOT
 
 # Force local filesystem storage (no Azure Blob)
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
