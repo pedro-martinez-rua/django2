@@ -14,6 +14,19 @@ from relecloud.models import Destination
 _TEMP_MEDIA = tempfile.mkdtemp()
 
 # PT1 TESTS
+@override_settings(
+    # Media (aislado para tests)
+    MEDIA_ROOT=_TEMP_MEDIA,
+    MEDIA_URL="/media/",
+
+    # Evitar redirecciones HTTPS en tests (tu CI usa DEBUG=False)
+    SECURE_SSL_REDIRECT=False,
+    SESSION_COOKIE_SECURE=False,
+    CSRF_COOKIE_SECURE=False,
+
+    # Forzar storage local en tests aunque en prod uses AzureStorage
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+)
 class InfoRequestEmailTest(TestCase):
     def setUp(self):
         # Create a Cruise instance for the test
