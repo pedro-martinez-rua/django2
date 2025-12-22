@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 
-# Create your models here.
+# Create your models here
 class Destination(models.Model):
     name = models.CharField(
         unique=True,
@@ -13,6 +13,11 @@ class Destination(models.Model):
         max_length=2000,
         null=False,
         blank=False
+    )
+    image = models.ImageField(
+        upload_to="destinations/",
+        null=True,
+        blank=True
     )
     def __str__(self):
         return self.name
