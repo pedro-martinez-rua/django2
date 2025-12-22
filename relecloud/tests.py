@@ -206,3 +206,68 @@ class PT3ReviewsTests(TestCase):
         resp2 = self.client.post(review_url, {"rating": 5, "comment": "ok"})
         self.assertEqual(resp2.status_code, 302)
         self.assertTrue(Review.objects.filter(user=self.u_other, cruise=self.cruise).exists())
+
+# TESTS PT4
+@override_settings(
+    # Media (aislado para tests)
+    MEDIA_ROOT=_TEMP_MEDIA,
+    MEDIA_URL="/media/",
+
+    # Evitar redirecciones HTTPS en tests (tu CI usa DEBUG=False)
+    SECURE_SSL_REDIRECT=False,
+    SESSION_COOKIE_SECURE=False,
+    CSRF_COOKIE_SECURE=False,
+
+    # Forzar storage local en tests aunque en prod uses AzureStorage
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+)
+class PT4DestinationsPopularitySortTests(TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create_user(username="u1", password="pass12345")
+        self.u2 = User.objects.create_user(username="u2", password="pass12345")
+
+        # Destinos
+        self.dest_a = Destination.objects.create(name="Alpha", description="A")   # tie-case
+        self.dest_b = Destination.objects.create(name="Beta", description="B")    # tie-case
+        self.dest_c = Destination.objects.create(name="Gamma", description="C")   # more reviews
+        self.dest_d = Destination.objects.create(name="Delta", description="D")   # fewer reviews but higher avg
+        self.dest_e = Destination.objects.create(name="Epsilon", description="E") # zero reviews
+
+        # Gamma: 2 reviews avg 3.0
+        Review.objects.create(user=self.u1, destination=self.dest_c, rating=4, comment="x")
+        Review.objects.create(user=self.u2, destination=self.dest_c, rating=2, comment="y")
+
+        # Delta: 1 review avg 5.0
+        Review.objects.create(user=self.u1, destination=self.dest_d, rating=5, comment="z")
+
+        # Alpha & Beta: 1 review avg 4.0 (igual), deben ir alfabéticamente
+        Review.objects.create(user=self.u2, destination=self.dest_a, rating=4, comment="a")
+        Review.objects.create(user=self.u1, destination=self.dest_b, rating=4, comment="b")
+
+    def test_destinations_sorted_by_popularity_then_alphabetical(self):
+        url = reverse("destinations")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        # Obtenemos el orden real que manda la vista
+        names = [d.name for d in resp.context["destinations"]]
+
+        # Orden esperado:
+        # - Gamma (2 reviews) primero
+        # - Luego los de 1 review ordenados por avg desc: Delta (5.0) antes que Alpha/Beta (4.0)
+        # - Alpha antes que Beta por alfabético (mismo count y misma avg)
+        # - Epsilon (0 reviews) al final
+        expected = ["Gamma", "Delta", "Alpha", "Beta", "Epsilon"]
+        self.assertEqual(names, expected)
+
+    def test_destinations_list_renders_review_count_and_avg(self):
+        url = reverse("destinations")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        html = resp.content.decode("utf-8")
+
+        # evidencia de renderizado (no solo lógica)
+        self.assertIn("Reviews:", html)
+        self.assertIn("Avg:", html)
+        self.assertIn("Gamma", html)  # o el destino que uses en setup
+

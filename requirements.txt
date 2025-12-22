@@ -1,4 +1,4 @@
-django
+django==5.2.9
 whitenoise
 gunicorn
 crispy-bootstrap4
