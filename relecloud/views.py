@@ -6,11 +6,13 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.mail import send_mail
 import logging
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+
+from django.db.models.functions import Coalesce
 
 
 
@@ -24,8 +26,16 @@ def about(request):
     return render(request, 'about.html')
 
 def destinations(request):
-    all_destinations = models.Destination.objects.all()
+    all_destinations = (
+        models.Destination.objects
+        .annotate(
+            review_count=Count("reviews", distinct=True),
+            avg_rating=Coalesce(Avg("reviews__rating"), 0.0),
+        )
+        .order_by("-review_count", "-avg_rating", "name")
+    )
     return render(request, 'destinations.html', {'destinations': all_destinations})
+
 
 class DestinationDetailView(generic.DetailView):
     template_name = 'destination_detail.html'

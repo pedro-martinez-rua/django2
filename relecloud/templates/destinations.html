@@ -12,9 +12,17 @@ If you can imagine it, we travel to it! Below is our list of confirmed destinati
 <p><a href="{% url 'destination_form' %}">[Add new destination]</a></p>
 <ul class="list-group">
     {% for destination in destinations %}
-    <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">
-        {{ destination }}
-    </a>
+        <a class="list-group-item list-group-item-action"
+            href="{% url 'destination_detail' destination.id %}">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+            <strong>{{ destination.name }}</strong>
+            <small>
+                Reviews: {{ destination.review_count }} |
+                Avg: {{ destination.avg_rating|floatformat:1 }}/5
+            </small>
+            </div>
+        </a>
     {% endfor %}
+
 </ul>
 {% endblock content %}
