@@ -6,13 +6,48 @@ ReleCloud - {{ cruise }}
 
 {% block content %}
 <h1>{{ cruise }}</h1>
-<p>
-{{ cruise.description }}
-</p>
-<p>You can explore {{ cruise }} on the following cruises:</p>
+
+<p>{{ cruise.description }}</p>
+
+<p>You can explore {{ cruise }} on the following destinations:</p>
 <ul class="list-group">
-    {% for destination in cruise.destinations.all %}
-    <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">{{ destination }}</a>
-    {% endfor %}
+  {% for destination in cruise.destinations.all %}
+    <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">
+      {{ destination }}
+    </a>
+  {% endfor %}
 </ul>
+
+<hr>
+
+<p>
+  Average rating:
+  {% if avg_rating %}{{ avg_rating|floatformat:1 }}/5{% else %}No ratings yet{% endif %}
+</p>
+
+{% if user.is_authenticated %}
+  {% if has_purchased %}
+    <p><strong>Purchased:</strong> Yes</p>
+    <a href="{% url 'cruise_review' cruise.id %}">Write / Edit review</a>
+  {% else %}
+    <p><strong>Purchased:</strong> No</p>
+    <form method="post" action="{% url 'cruise_purchase' cruise.id %}">
+      {% csrf_token %}
+      <button type="submit">Purchase this cruise</button>
+    </form>
+    <p><em>You must purchase this cruise to review it.</em></p>
+  {% endif %}
+{% else %}
+  <p><a href="/accounts/login/">Login</a> to purchase and write a review.</p>
+{% endif %}
+
+<h3>Reviews</h3>
+<ul>
+  {% for r in reviews %}
+    <li><strong>{{ r.user.username }}</strong> - {{ r.rating }}/5<br>{{ r.comment }}</li>
+  {% empty %}
+    <li>No reviews yet.</li>
+  {% endfor %}
+</ul>
+
 {% endblock content %}

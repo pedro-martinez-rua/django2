@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Review for {{ target.name }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  <label for="rating">Rating (1-5)</label>
+  <input type="number" id="rating" name="rating" min="1" max="5"
+         value="{% if review %}{{ review.rating }}{% else %}5{% endif %}" required />
+
+  <br><br>
+
+  <label for="comment">Comment</label><br>
+  <textarea id="comment" name="comment" rows="4" cols="60">{% if review %}{{ review.comment }}{% endif %}</textarea>
+
+  <br><br>
+
+  <button type="submit">Save review</button>
+</form>
+
+{% endblock %}
