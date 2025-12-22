@@ -1,6 +1,9 @@
 from django.contrib import admin
-from . import models
+from .models import Destination, Cruise, InfoRequest, Purchase, Review
 # Register your models here.
 
-admin.site.register(models.Destination)
-admin.site.register(models.Cruise)
+admin.site.register(Destination)
+admin.site.register(Cruise)
+admin.site.register(InfoRequest)
+admin.site.register(Purchase)
+admin.site.register(Review)

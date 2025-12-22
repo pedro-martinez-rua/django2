@@ -1,6 +1,6 @@
 # APP (relecloud)
 
-from django.urls import path
+from django.urls import path, include
 
 from . import views
 
@@ -14,4 +14,11 @@ urlpatterns = [
     path('destination/<int:pk>/delete', views.DestinationDeleteView.as_view(), name='destination_confirm_delete'),
     path('cruise/<int:pk>', views.CruiseDetailView.as_view(), name='cruise_detail'),
     path('info_request', views.InfoRequestCreate.as_view(), name='info_request'),
+    
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('destination/<int:pk>/review', views.DestinationReviewCreateUpdateView.as_view(), name='destination_review'),
+    path('cruise/<int:pk>/review', views.CruiseReviewCreateUpdateView.as_view(), name='cruise_review'),
+    path('accounts/signup/', views.SignUpView.as_view(), name='signup'),
+    path('cruise/<int:pk>/purchase', views.purchase_cruise, name='cruise_purchase'),
+    
 ]

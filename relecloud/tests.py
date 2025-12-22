@@ -9,9 +9,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from PIL import Image
 
-from relecloud.models import Destination
+from django.contrib.auth import get_user_model
+from django.db.models import Avg
+
+from .models import Destination, Cruise, Purchase, Review
+
 
 _TEMP_MEDIA = tempfile.mkdtemp()
+User = get_user_model()
 
 # PT1 TESTS
 class InfoRequestEmailTest(TestCase):
@@ -108,3 +113,83 @@ class PT2DestinationImageTests(TestCase):
         dest = Destination.objects.get(name="Rome")
         self.assertTrue(dest.image.name)
         self.assertTrue(dest.image.name.startswith("destinations/"))
+
+# TESTS PT3
+@override_settings(
+    # Media (aislado para tests)
+    MEDIA_ROOT=_TEMP_MEDIA,
+    MEDIA_URL="/media/",
+
+    # Evitar redirecciones HTTPS en tests (tu CI usa DEBUG=False)
+    SECURE_SSL_REDIRECT=False,
+    SESSION_COOKIE_SECURE=False,
+    CSRF_COOKIE_SECURE=False,
+
+    # Forzar storage local en tests aunque en prod uses AzureStorage
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+)
+class PT3ReviewsTests(TestCase):
+    def setUp(self):
+        self.u_buyer = User.objects.create_user(username="buyer", password="pass12345")
+        self.u_other = User.objects.create_user(username="other", password="pass12345")
+
+        self.dest = Destination.objects.create(name="Mars", description="Red planet")
+        self.cruise = Cruise.objects.create(name="Cruise1", description="C1")
+        self.cruise.destinations.add(self.dest)
+
+        Purchase.objects.create(user=self.u_buyer, cruise=self.cruise)
+
+    def test_anonymous_cannot_open_destination_review_form(self):
+        url = reverse("destination_review", args=[self.dest.id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_logged_user_without_purchase_cannot_post_destination_review(self):
+        self.client.login(username="other", password="pass12345")
+        url = reverse("destination_review", args=[self.dest.id])
+        resp = self.client.post(url, {"rating": 5, "comment": "Nice"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertFalse(Review.objects.filter(user=self.u_other, destination=self.dest).exists())
+
+    def test_buyer_can_create_destination_review(self):
+        self.client.login(username="buyer", password="pass12345")
+        url = reverse("destination_review", args=[self.dest.id])
+        resp = self.client.post(url, {"rating": 4, "comment": "Great"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Review.objects.filter(user=self.u_buyer, destination=self.dest, rating=4).exists())
+
+    def test_buyer_can_update_same_destination_review_instead_of_duplicate(self):
+        Review.objects.create(user=self.u_buyer, destination=self.dest, rating=2, comment="ok")
+        self.client.login(username="buyer", password="pass12345")
+        url = reverse("destination_review", args=[self.dest.id])
+        self.client.post(url, {"rating": 5, "comment": "updated"})
+        self.assertEqual(Review.objects.filter(user=self.u_buyer, destination=self.dest).count(), 1)
+        self.assertEqual(Review.objects.get(user=self.u_buyer, destination=self.dest).rating, 5)
+
+    def test_average_rating_is_correct_for_destination(self):
+        Review.objects.create(user=self.u_buyer, destination=self.dest, rating=4)
+        Review.objects.create(user=self.u_other, destination=self.dest, rating=2)
+        avg = self.dest.reviews.aggregate(a=Avg("rating"))["a"]
+        self.assertEqual(avg, 3)
+
+    def test_buyer_can_review_cruise(self):
+        self.client.login(username="buyer", password="pass12345")
+        url = reverse("cruise_review", args=[self.cruise.id])
+        resp = self.client.post(url, {"rating": 5, "comment": "Amazing"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Review.objects.filter(user=self.u_buyer, cruise=self.cruise, rating=5).exists())
+        
+    def test_purchase_creates_purchase_and_enables_cruise_review(self):
+        self.client.login(username="other", password="pass12345")
+        purchase_url = reverse("cruise_purchase", args=[self.cruise.id])
+
+        resp = self.client.post(purchase_url)
+        self.assertEqual(resp.status_code, 302)
+
+        self.assertTrue(Purchase.objects.filter(user=self.u_other, cruise=self.cruise).exists())
+
+        # ahora debe permitir review
+        review_url = reverse("cruise_review", args=[self.cruise.id])
+        resp2 = self.client.post(review_url, {"rating": 5, "comment": "ok"})
+        self.assertEqual(resp2.status_code, 302)
+        self.assertTrue(Review.objects.filter(user=self.u_other, cruise=self.cruise).exists())
